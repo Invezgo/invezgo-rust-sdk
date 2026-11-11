@@ -189,7 +189,7 @@ pub struct AlertRequest {
     /// `scope` field.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<Vec<String>>,
-    /// `formula` field.
+    /// Formula alert (sama dengan batas formula screener)
     pub formula: String,
 }
 
@@ -232,7 +232,7 @@ pub struct UpdateAlertRequest {
     pub every: String,
     /// `send` field.
     pub send: String,
-    /// `formula` field.
+    /// Formula alert (sama dengan batas formula screener)
     pub formula: String,
     /// `scope` field.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1504,123 +1504,363 @@ pub struct ShareholderClassificationItem {
     /// Data date; WIB wall-clock DateTime with a literal Z suffix (not UTC), e.g. 2026-10-16T00:00:00.000Z
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub date: String,
-    /// Shares held by Bank investors (shares) (numeric string)
+    /// Shares held by domestic Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_bk: String,
+    /// Shares held by foreign Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_bk: String,
+    /// Shares held by Bank investors, local_bk + foreign_bk (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub bk: String,
-    /// Shares held by Government investors (shares) (numeric string)
+    /// Shares held by domestic Government investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_gv: String,
+    /// Shares held by foreign Government investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_gv: String,
+    /// Shares held by Government investors, local_gv + foreign_gv (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub gv: String,
-    /// Shares held by Private Equity investors (shares) (numeric string)
+    /// Shares held by domestic Private Equity investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pe: String,
+    /// Shares held by foreign Private Equity investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pe: String,
+    /// Shares held by Private Equity investors, local_pe + foreign_pe (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pe: String,
-    /// Shares held by Trustee Bank investors (shares) (numeric string)
+    /// Shares held by domestic Trustee Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_tb: String,
+    /// Shares held by foreign Trustee Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_tb: String,
+    /// Shares held by Trustee Bank investors, local_tb + foreign_tb (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub tb: String,
-    /// Shares held by Venture Capital investors (shares) (numeric string)
+    /// Shares held by domestic Venture Capital investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_vc: String,
+    /// Shares held by foreign Venture Capital investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_vc: String,
+    /// Shares held by Venture Capital investors, local_vc + foreign_vc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub vc: String,
-    /// Shares held by Private Bank investors (shares) (numeric string)
+    /// Shares held by domestic Private Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pb: String,
+    /// Shares held by foreign Private Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pb: String,
+    /// Shares held by Private Bank investors, local_pb + foreign_pb (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pb: String,
-    /// Shares held by Exchange Traded Fund (ETF) investors (shares) (numeric string)
+    /// Shares held by domestic Exchange Traded Fund (ETF) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ef: String,
+    /// Shares held by foreign Exchange Traded Fund (ETF) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ef: String,
+    /// Shares held by Exchange Traded Fund (ETF) investors, local_ef + foreign_ef (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ef: String,
-    /// Shares held by Investment Manager investors (shares) (numeric string)
+    /// Shares held by domestic Investment Manager investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_im: String,
+    /// Shares held by foreign Investment Manager investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_im: String,
+    /// Shares held by Investment Manager investors, local_im + foreign_im (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub im: String,
-    /// Shares held by Investment Advisor investors (shares) (numeric string)
+    /// Shares held by domestic Investment Advisor investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ia: String,
+    /// Shares held by foreign Investment Advisor investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ia: String,
+    /// Shares held by Investment Advisor investors, local_ia + foreign_ia (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ia: String,
-    /// Shares held by Brokerage Firm investors (shares) (numeric string)
+    /// Shares held by domestic Brokerage Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_br: String,
+    /// Shares held by foreign Brokerage Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_br: String,
+    /// Shares held by Brokerage Firm investors, local_br + foreign_br (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub br: String,
-    /// Shares held by Hedge Fund investors (shares) (numeric string)
+    /// Shares held by domestic Hedge Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_hf: String,
+    /// Shares held by foreign Hedge Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_hf: String,
+    /// Shares held by Hedge Fund investors, local_hf + foreign_hf (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub hf: String,
-    /// Shares held by Sovereign Wealth Fund investors (shares) (numeric string)
+    /// Shares held by domestic Sovereign Wealth Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sw: String,
+    /// Shares held by foreign Sovereign Wealth Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sw: String,
+    /// Shares held by Sovereign Wealth Fund investors, local_sw + foreign_sw (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sw: String,
-    /// Shares held by Capital Market Supporting Institution investors (shares) (numeric string)
+    /// Shares held by domestic Capital Market Supporting Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cm: String,
+    /// Shares held by foreign Capital Market Supporting Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cm: String,
+    /// Shares held by Capital Market Supporting Institution investors, local_cm + foreign_cm (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cm: String,
-    /// Shares held by Commanditaire Vennootschap (CV) investors (shares) (numeric string)
+    /// Shares held by domestic Commanditaire Vennootschap (CV) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cv: String,
+    /// Shares held by foreign Commanditaire Vennootschap (CV) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cv: String,
+    /// Shares held by Commanditaire Vennootschap (CV) investors, local_cv + foreign_cv (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cv: String,
-    /// Shares held by Firm investors (shares) (numeric string)
+    /// Shares held by domestic Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_fm: String,
+    /// Shares held by foreign Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_fm: String,
+    /// Shares held by Firm investors, local_fm + foreign_fm (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub fm: String,
-    /// Shares held by Mutual Fund Selling Agent investors (shares) (numeric string)
+    /// Shares held by domestic Mutual Fund Selling Agent investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sa: String,
+    /// Shares held by foreign Mutual Fund Selling Agent investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sa: String,
+    /// Shares held by Mutual Fund Selling Agent investors, local_sa + foreign_sa (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sa: String,
-    /// Shares held by Peer to Peer Lending investors (shares) (numeric string)
+    /// Shares held by domestic Peer to Peer Lending investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pp: String,
+    /// Shares held by foreign Peer to Peer Lending investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pp: String,
+    /// Shares held by Peer to Peer Lending investors, local_pp + foreign_pp (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pp: String,
-    /// Shares held by Permanent Establishment investors (shares) (numeric string)
+    /// Shares held by domestic Permanent Establishment investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ps: String,
+    /// Shares held by foreign Permanent Establishment investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ps: String,
+    /// Shares held by Permanent Establishment investors, local_ps + foreign_ps (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ps: String,
-    /// Shares held by Sole Proprietorship investors (shares) (numeric string)
+    /// Shares held by domestic Sole Proprietorship investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sp: String,
+    /// Shares held by foreign Sole Proprietorship investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sp: String,
+    /// Shares held by Sole Proprietorship investors, local_sp + foreign_sp (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sp: String,
-    /// Shares held by Corporate investors (shares) (numeric string)
+    /// Shares held by domestic Corporate investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cr: String,
+    /// Shares held by foreign Corporate investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cr: String,
+    /// Shares held by Corporate investors, local_cr + foreign_cr (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cr: String,
-    /// Shares held by Association / Social Organization investors (shares) (numeric string)
+    /// Shares held by domestic Association / Social Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_as: String,
+    /// Shares held by foreign Association / Social Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_as: String,
+    /// Shares held by Association / Social Organization investors, local_as + foreign_as (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub r#as: String,
-    /// Shares held by State-Owned Enterprise (BUMN) investors (shares) (numeric string)
+    /// Shares held by domestic State-Owned Enterprise (BUMN) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_so: String,
+    /// Shares held by foreign State-Owned Enterprise (BUMN) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_so: String,
+    /// Shares held by State-Owned Enterprise (BUMN) investors, local_so + foreign_so (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub so: String,
-    /// Shares held by Central Bank investors (shares) (numeric string)
+    /// Shares held by domestic Central Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cb: String,
+    /// Shares held by foreign Central Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cb: String,
+    /// Shares held by Central Bank investors, local_cb + foreign_cb (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cb: String,
-    /// Shares held by State-Owned Company investors (shares) (numeric string)
+    /// Shares held by domestic State-Owned Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_oc: String,
+    /// Shares held by foreign State-Owned Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_oc: String,
+    /// Shares held by State-Owned Company investors, local_oc + foreign_oc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub oc: String,
-    /// Shares held by Diocese investors (shares) (numeric string)
+    /// Shares held by domestic Diocese investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_dc: String,
+    /// Shares held by foreign Diocese investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_dc: String,
+    /// Shares held by Diocese investors, local_dc + foreign_dc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub dc: String,
-    /// Shares held by Conference investors (shares) (numeric string)
+    /// Shares held by domestic Conference investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cn: String,
+    /// Shares held by foreign Conference investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cn: String,
+    /// Shares held by Conference investors, local_cn + foreign_cn (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cn: String,
-    /// Shares held by Congregation investors (shares) (numeric string)
+    /// Shares held by domestic Congregation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cg: String,
+    /// Shares held by foreign Congregation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cg: String,
+    /// Shares held by Congregation investors, local_cg + foreign_cg (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cg: String,
-    /// Shares held by Cooperative investors (shares) (numeric string)
+    /// Shares held by domestic Cooperative investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cp: String,
+    /// Shares held by foreign Cooperative investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cp: String,
+    /// Shares held by Cooperative investors, local_cp + foreign_cp (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cp: String,
-    /// Shares held by International Organization investors (shares) (numeric string)
+    /// Shares held by domestic International Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_io: String,
+    /// Shares held by foreign International Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_io: String,
+    /// Shares held by International Organization investors, local_io + foreign_io (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub io: String,
-    /// Shares held by Political Party investors (shares) (numeric string)
+    /// Shares held by domestic Political Party investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pl: String,
+    /// Shares held by foreign Political Party investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pl: String,
+    /// Shares held by Political Party investors, local_pl + foreign_pl (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pl: String,
-    /// Shares held by Partnership investors (shares) (numeric string)
+    /// Shares held by domestic Partnership investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pt: String,
+    /// Shares held by foreign Partnership investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pt: String,
+    /// Shares held by Partnership investors, local_pt + foreign_pt (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pt: String,
-    /// Shares held by Educational Institution investors (shares) (numeric string)
+    /// Shares held by domestic Educational Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ed: String,
+    /// Shares held by foreign Educational Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ed: String,
+    /// Shares held by Educational Institution investors, local_ed + foreign_ed (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ed: String,
-    /// Shares held by Mutual Fund investors (shares) (numeric string)
+    /// Shares held by domestic Mutual Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_mf: String,
+    /// Shares held by foreign Mutual Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_mf: String,
+    /// Shares held by Mutual Fund investors, local_mf + foreign_mf (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub mf: String,
-    /// Shares held by Securities Company investors (shares) (numeric string)
+    /// Shares held by domestic Securities Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sc: String,
+    /// Shares held by foreign Securities Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sc: String,
+    /// Shares held by Securities Company investors, local_sc + foreign_sc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sc: String,
-    /// Shares held by Pension Fund investors (shares) (numeric string)
+    /// Shares held by domestic Pension Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pf: String,
+    /// Shares held by foreign Pension Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pf: String,
+    /// Shares held by Pension Fund investors, local_pf + foreign_pf (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pf: String,
-    /// Shares held by Financial Institution investors (shares) (numeric string)
+    /// Shares held by domestic Financial Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ib: String,
+    /// Shares held by foreign Financial Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ib: String,
+    /// Shares held by Financial Institution investors, local_ib + foreign_ib (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ib: String,
-    /// Shares held by Insurance investors (shares) (numeric string)
+    /// Shares held by domestic Insurance investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_is: String,
+    /// Shares held by foreign Insurance investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_is: String,
+    /// Shares held by Insurance investors, local_is + foreign_is (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub is: String,
-    /// Shares held by Foundation investors (shares) (numeric string)
+    /// Shares held by domestic Foundation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_fd: String,
+    /// Shares held by foreign Foundation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_fd: String,
+    /// Shares held by Foundation investors, local_fd + foreign_fd (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub fd: String,
-    /// Shares held by Individual investors (shares) (numeric string)
+    /// Shares held by domestic Individual investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_in: String,
+    /// Shares held by foreign Individual investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_in: String,
+    /// Shares held by Individual investors, local_in + foreign_in (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub r#in: String,
+    /// Total shares held by foreign investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub total_foreign: String,
+    /// Total shares held by domestic investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub total_local: String,
     /// Total shares across all classifications (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub total: String,
@@ -1632,126 +1872,425 @@ pub struct ShareholderClassifyTableResponse {
     /// Stock code
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
-    /// Shares held by Bank investors (shares) (numeric string)
+    /// Shares held by domestic Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_bk: String,
+    /// Shares held by foreign Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_bk: String,
+    /// Shares held by Bank investors, local_bk + foreign_bk (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub bk: String,
-    /// Shares held by Government investors (shares) (numeric string)
+    /// Shares held by domestic Government investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_gv: String,
+    /// Shares held by foreign Government investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_gv: String,
+    /// Shares held by Government investors, local_gv + foreign_gv (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub gv: String,
-    /// Shares held by Private Equity investors (shares) (numeric string)
+    /// Shares held by domestic Private Equity investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pe: String,
+    /// Shares held by foreign Private Equity investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pe: String,
+    /// Shares held by Private Equity investors, local_pe + foreign_pe (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pe: String,
-    /// Shares held by Trustee Bank investors (shares) (numeric string)
+    /// Shares held by domestic Trustee Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_tb: String,
+    /// Shares held by foreign Trustee Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_tb: String,
+    /// Shares held by Trustee Bank investors, local_tb + foreign_tb (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub tb: String,
-    /// Shares held by Venture Capital investors (shares) (numeric string)
+    /// Shares held by domestic Venture Capital investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_vc: String,
+    /// Shares held by foreign Venture Capital investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_vc: String,
+    /// Shares held by Venture Capital investors, local_vc + foreign_vc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub vc: String,
-    /// Shares held by Private Bank investors (shares) (numeric string)
+    /// Shares held by domestic Private Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pb: String,
+    /// Shares held by foreign Private Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pb: String,
+    /// Shares held by Private Bank investors, local_pb + foreign_pb (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pb: String,
-    /// Shares held by Exchange Traded Fund (ETF) investors (shares) (numeric string)
+    /// Shares held by domestic Exchange Traded Fund (ETF) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ef: String,
+    /// Shares held by foreign Exchange Traded Fund (ETF) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ef: String,
+    /// Shares held by Exchange Traded Fund (ETF) investors, local_ef + foreign_ef (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ef: String,
-    /// Shares held by Investment Manager investors (shares) (numeric string)
+    /// Shares held by domestic Investment Manager investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_im: String,
+    /// Shares held by foreign Investment Manager investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_im: String,
+    /// Shares held by Investment Manager investors, local_im + foreign_im (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub im: String,
-    /// Shares held by Investment Advisor investors (shares) (numeric string)
+    /// Shares held by domestic Investment Advisor investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ia: String,
+    /// Shares held by foreign Investment Advisor investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ia: String,
+    /// Shares held by Investment Advisor investors, local_ia + foreign_ia (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ia: String,
-    /// Shares held by Brokerage Firm investors (shares) (numeric string)
+    /// Shares held by domestic Brokerage Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_br: String,
+    /// Shares held by foreign Brokerage Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_br: String,
+    /// Shares held by Brokerage Firm investors, local_br + foreign_br (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub br: String,
-    /// Shares held by Hedge Fund investors (shares) (numeric string)
+    /// Shares held by domestic Hedge Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_hf: String,
+    /// Shares held by foreign Hedge Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_hf: String,
+    /// Shares held by Hedge Fund investors, local_hf + foreign_hf (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub hf: String,
-    /// Shares held by Sovereign Wealth Fund investors (shares) (numeric string)
+    /// Shares held by domestic Sovereign Wealth Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sw: String,
+    /// Shares held by foreign Sovereign Wealth Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sw: String,
+    /// Shares held by Sovereign Wealth Fund investors, local_sw + foreign_sw (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sw: String,
-    /// Shares held by Capital Market Supporting Institution investors (shares) (numeric string)
+    /// Shares held by domestic Capital Market Supporting Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cm: String,
+    /// Shares held by foreign Capital Market Supporting Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cm: String,
+    /// Shares held by Capital Market Supporting Institution investors, local_cm + foreign_cm (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cm: String,
-    /// Shares held by Commanditaire Vennootschap (CV) investors (shares) (numeric string)
+    /// Shares held by domestic Commanditaire Vennootschap (CV) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cv: String,
+    /// Shares held by foreign Commanditaire Vennootschap (CV) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cv: String,
+    /// Shares held by Commanditaire Vennootschap (CV) investors, local_cv + foreign_cv (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cv: String,
-    /// Shares held by Firm investors (shares) (numeric string)
+    /// Shares held by domestic Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_fm: String,
+    /// Shares held by foreign Firm investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_fm: String,
+    /// Shares held by Firm investors, local_fm + foreign_fm (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub fm: String,
-    /// Shares held by Mutual Fund Selling Agent investors (shares) (numeric string)
+    /// Shares held by domestic Mutual Fund Selling Agent investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sa: String,
+    /// Shares held by foreign Mutual Fund Selling Agent investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sa: String,
+    /// Shares held by Mutual Fund Selling Agent investors, local_sa + foreign_sa (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sa: String,
-    /// Shares held by Peer to Peer Lending investors (shares) (numeric string)
+    /// Shares held by domestic Peer to Peer Lending investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pp: String,
+    /// Shares held by foreign Peer to Peer Lending investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pp: String,
+    /// Shares held by Peer to Peer Lending investors, local_pp + foreign_pp (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pp: String,
-    /// Shares held by Permanent Establishment investors (shares) (numeric string)
+    /// Shares held by domestic Permanent Establishment investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ps: String,
+    /// Shares held by foreign Permanent Establishment investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ps: String,
+    /// Shares held by Permanent Establishment investors, local_ps + foreign_ps (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ps: String,
-    /// Shares held by Sole Proprietorship investors (shares) (numeric string)
+    /// Shares held by domestic Sole Proprietorship investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sp: String,
+    /// Shares held by foreign Sole Proprietorship investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sp: String,
+    /// Shares held by Sole Proprietorship investors, local_sp + foreign_sp (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sp: String,
-    /// Shares held by Corporate investors (shares) (numeric string)
+    /// Shares held by domestic Corporate investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cr: String,
+    /// Shares held by foreign Corporate investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cr: String,
+    /// Shares held by Corporate investors, local_cr + foreign_cr (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cr: String,
-    /// Shares held by Association / Social Organization investors (shares) (numeric string)
+    /// Shares held by domestic Association / Social Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_as: String,
+    /// Shares held by foreign Association / Social Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_as: String,
+    /// Shares held by Association / Social Organization investors, local_as + foreign_as (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub r#as: String,
-    /// Shares held by State-Owned Enterprise (BUMN) investors (shares) (numeric string)
+    /// Shares held by domestic State-Owned Enterprise (BUMN) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_so: String,
+    /// Shares held by foreign State-Owned Enterprise (BUMN) investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_so: String,
+    /// Shares held by State-Owned Enterprise (BUMN) investors, local_so + foreign_so (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub so: String,
-    /// Shares held by Central Bank investors (shares) (numeric string)
+    /// Shares held by domestic Central Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cb: String,
+    /// Shares held by foreign Central Bank investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cb: String,
+    /// Shares held by Central Bank investors, local_cb + foreign_cb (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cb: String,
-    /// Shares held by State-Owned Company investors (shares) (numeric string)
+    /// Shares held by domestic State-Owned Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_oc: String,
+    /// Shares held by foreign State-Owned Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_oc: String,
+    /// Shares held by State-Owned Company investors, local_oc + foreign_oc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub oc: String,
-    /// Shares held by Diocese investors (shares) (numeric string)
+    /// Shares held by domestic Diocese investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_dc: String,
+    /// Shares held by foreign Diocese investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_dc: String,
+    /// Shares held by Diocese investors, local_dc + foreign_dc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub dc: String,
-    /// Shares held by Conference investors (shares) (numeric string)
+    /// Shares held by domestic Conference investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cn: String,
+    /// Shares held by foreign Conference investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cn: String,
+    /// Shares held by Conference investors, local_cn + foreign_cn (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cn: String,
-    /// Shares held by Congregation investors (shares) (numeric string)
+    /// Shares held by domestic Congregation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cg: String,
+    /// Shares held by foreign Congregation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cg: String,
+    /// Shares held by Congregation investors, local_cg + foreign_cg (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cg: String,
-    /// Shares held by Cooperative investors (shares) (numeric string)
+    /// Shares held by domestic Cooperative investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_cp: String,
+    /// Shares held by foreign Cooperative investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_cp: String,
+    /// Shares held by Cooperative investors, local_cp + foreign_cp (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub cp: String,
-    /// Shares held by International Organization investors (shares) (numeric string)
+    /// Shares held by domestic International Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_io: String,
+    /// Shares held by foreign International Organization investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_io: String,
+    /// Shares held by International Organization investors, local_io + foreign_io (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub io: String,
-    /// Shares held by Political Party investors (shares) (numeric string)
+    /// Shares held by domestic Political Party investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pl: String,
+    /// Shares held by foreign Political Party investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pl: String,
+    /// Shares held by Political Party investors, local_pl + foreign_pl (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pl: String,
-    /// Shares held by Partnership investors (shares) (numeric string)
+    /// Shares held by domestic Partnership investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pt: String,
+    /// Shares held by foreign Partnership investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pt: String,
+    /// Shares held by Partnership investors, local_pt + foreign_pt (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pt: String,
-    /// Shares held by Educational Institution investors (shares) (numeric string)
+    /// Shares held by domestic Educational Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ed: String,
+    /// Shares held by foreign Educational Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ed: String,
+    /// Shares held by Educational Institution investors, local_ed + foreign_ed (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ed: String,
-    /// Shares held by Mutual Fund investors (shares) (numeric string)
+    /// Shares held by domestic Mutual Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_mf: String,
+    /// Shares held by foreign Mutual Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_mf: String,
+    /// Shares held by Mutual Fund investors, local_mf + foreign_mf (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub mf: String,
-    /// Shares held by Securities Company investors (shares) (numeric string)
+    /// Shares held by domestic Securities Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_sc: String,
+    /// Shares held by foreign Securities Company investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sc: String,
+    /// Shares held by Securities Company investors, local_sc + foreign_sc (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub sc: String,
-    /// Shares held by Pension Fund investors (shares) (numeric string)
+    /// Shares held by domestic Pension Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_pf: String,
+    /// Shares held by foreign Pension Fund investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_pf: String,
+    /// Shares held by Pension Fund investors, local_pf + foreign_pf (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub pf: String,
-    /// Shares held by Financial Institution investors (shares) (numeric string)
+    /// Shares held by domestic Financial Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_ib: String,
+    /// Shares held by foreign Financial Institution investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_ib: String,
+    /// Shares held by Financial Institution investors, local_ib + foreign_ib (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub ib: String,
-    /// Shares held by Insurance investors (shares) (numeric string)
+    /// Shares held by domestic Insurance investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_is: String,
+    /// Shares held by foreign Insurance investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_is: String,
+    /// Shares held by Insurance investors, local_is + foreign_is (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub is: String,
-    /// Shares held by Foundation investors (shares) (numeric string)
+    /// Shares held by domestic Foundation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_fd: String,
+    /// Shares held by foreign Foundation investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_fd: String,
+    /// Shares held by Foundation investors, local_fd + foreign_fd (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub fd: String,
-    /// Shares held by Individual investors (shares) (numeric string)
+    /// Shares held by domestic Individual investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub local_in: String,
+    /// Shares held by foreign Individual investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_in: String,
+    /// Shares held by Individual investors, local_in + foreign_in (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub r#in: String,
+    /// Total shares held by foreign investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub total_foreign: String,
+    /// Total shares held by domestic investors (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub total_local: String,
     /// Total shares across all classifications (shares) (numeric string)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub total: String,
+}
+
+/// Part of the response of `GET /analysis/free-float/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FreeFloatItem {
+    /// Stock code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub code: String,
+    /// Data date; WIB wall-clock DateTime with a literal Z suffix (not UTC), e.g. 2026-10-16T00:00:00.000Z
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub date: String,
+    /// Scripless shares held by all shareholders with less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub public: String,
+    /// Scripless shares held by the Board of Directors and Commissioners, less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub management: String,
+    /// Scripless shares held by the Controller, less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub controller: String,
+    /// Scripless shares held by Affiliates of the Controller, less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub affiliate: String,
+    /// Scripless treasury shares, less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub treasury: String,
+    /// Shares under a transfer restriction (lock up), less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub lock_up: String,
+    /// Scripless shares held by Venture Capital and Private Equity firms, less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub private: String,
+    /// Scripless shares seized or blocked by law enforcement or a competent authority, less than 5% (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub law: String,
+    /// Shares whose beneficial owners are public investors approved by the Exchange to count as Free Float (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub other: String,
+    /// Free Float shares (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub total: String,
+    /// Shares listed on the Exchange at month end (shares) (numeric string)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub share: String,
+    /// Free Float percentage (%)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub free: f64,
+    /// Unlisted shares, previous month (shares) (numeric string); null if absent
+    #[serde(default)]
+    pub not_record_value_prev: Option<String>,
+    /// Unlisted shares percentage, previous month (%); null if absent
+    #[serde(default)]
+    pub not_record_pct_prev: Option<f64>,
+    /// Unlisted shares, current month (shares) (numeric string); null if absent
+    #[serde(default)]
+    pub not_record_value_next: Option<String>,
+    /// Unlisted shares percentage, current month (%); null if absent
+    #[serde(default)]
+    pub not_record_pct_next: Option<f64>,
 }
 
 /// Part of the response of `GET /analysis/summary/stock/{code}`.
@@ -2760,6 +3299,126 @@ pub struct KeystatChartPoints {
     /// Statistic value for the period (unit depends on the statistic); 0 when not reported or name unknown
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub amount: f64,
+}
+
+/// Part of the response of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FlowOfFundsResponse {
+    /// `columns` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub columns: Vec<FlowOfFundsColumns>,
+    /// `role` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub role: String,
+    /// `sector` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub sector: String,
+    /// `currency` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub currency: String,
+    /// `periods` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub periods: Vec<FlowOfFundsPeriods>,
+}
+
+/// Part of the response of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FlowOfFundsColumns {
+    /// `label` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub label: String,
+    /// `year` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub year: i64,
+    /// `period` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub period: String,
+}
+
+/// Part of the response of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FlowOfFundsPeriods {
+    /// `label` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub label: String,
+    /// `year` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub year: i64,
+    /// `period` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub period: String,
+    /// `basis` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub basis: String,
+    /// `nodes` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub nodes: Vec<FlowOfFundsPeriodsNodes>,
+    /// `links` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub links: Vec<FlowOfFundsPeriodsLinks>,
+    /// `bridge` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub bridge: Vec<FlowOfFundsPeriodsBridge>,
+    /// `checks` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub checks: HashMap<String, serde_json::Value>,
+}
+
+/// Part of the response of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FlowOfFundsPeriodsNodes {
+    /// `id` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub id: String,
+    /// `concept` field.
+    #[serde(default)]
+    pub concept: Option<String>,
+    /// `label_id` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub label_id: String,
+    /// `label_en` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub label_en: String,
+    /// `kind` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub kind: String,
+    /// `value` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub value: f64,
+}
+
+/// Part of the response of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FlowOfFundsPeriodsLinks {
+    /// `source` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub source: String,
+    /// `target` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub target: String,
+    /// `value` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub value: f64,
+}
+
+/// Part of the response of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FlowOfFundsPeriodsBridge {
+    /// `id` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub id: String,
+    /// `label_id` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub label_id: String,
+    /// `label_en` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub label_en: String,
+    /// `kind` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub kind: String,
+    /// `value` field.
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub value: f64,
 }
 
 /// Paginated corporate-action calendar, newest event date first.
@@ -4378,18 +5037,27 @@ pub struct DisclosureResponse {
 /// One item of data
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct DisclosureData {
+    /// Disclosure id
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub id: String,
     /// Disclosure title
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub title: String,
-    /// Issuer stock code (empty string if not tagged)
+    /// Issuer stock code
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
     /// Publication time, WIB wall-clock in YYYY-MM-DDTHH:MM:SS format (no Z, no fraction), e.g. 2026-09-29T08:00:00
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub date: String,
-    /// Disclosure type, e.g. public_expose (empty string if not tagged)
+    /// Disclosure type (lowercase StockReportType), e.g. public_expose
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub r#type: String,
+    /// Disclosure description
+    #[serde(default)]
+    pub description: Option<String>,
+    /// Disclosure summary points
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub summary: Vec<String>,
     /// Attachment files
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub list: Vec<DisclosureDataList>,

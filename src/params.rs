@@ -825,7 +825,7 @@ pub struct OrderBookParams {
     pub market: OrderBookMarket,
     /// Tanggal order book historis (`YYYY-MM-DD`), tersedia mulai `2026-03-25`. Wajib dikirim bersama `time`; kosongkan keduanya untuk data realtime. (example `2026-03-25`)
     pub date: Option<String>,
-    /// Jam snapshot order book dalam WIB, format `HH:mm` pada jam perdagangan (09:00–15:59). Wajib dikirim bersama `date`. (example `09:30`)
+    /// Jam snapshot order book dalam WIB, format `HH:mm` atau `HH:mm:ss` pada jam perdagangan (09:00–15:59); mengembalikan snapshot terdekat pada tanggal tersebut. Wajib dikirim bersama `date`. (example `09:30`)
     pub time: Option<String>,
 }
 
@@ -1311,6 +1311,26 @@ impl ShareholderClassificationParams {
 }
 
 impl ShareholderClassificationParams {
+    pub(crate) fn to_query(&self) -> Vec<(&'static str, String)> {
+        vec![("range", self.range.to_string())]
+    }
+}
+
+/// Query parameters for `GET /analysis/free-float/{code}` (Stock Free Float).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct FreeFloatParams {
+    /// Jumlah bulan terakhir yang ditampilkan, mis. `6` untuk 6 bulan terakhir. Akun TRIAL dibatasi maksimal 12 bulan. (min `1`, max `36`, example `6`)
+    pub range: i64,
+}
+
+impl FreeFloatParams {
+    /// Creates a value with the required fields set.
+    pub fn new(range: i64) -> Self {
+        Self { range }
+    }
+}
+
+impl FreeFloatParams {
     pub(crate) fn to_query(&self) -> Vec<(&'static str, String)> {
         vec![("range", self.range.to_string())]
     }
@@ -3753,6 +3773,76 @@ impl KeystatChartParams {
     }
 }
 
+/// Allowed values for `type` of `GET /analysis/flow-of-funds/{code}`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+pub enum FlowOfFundsType {
+    /// `FY`
+    #[default]
+    #[serde(rename = "FY")]
+    Fy,
+    /// `Q`
+    #[serde(rename = "Q")]
+    Q,
+    /// `Q1`
+    #[serde(rename = "Q1")]
+    Q1,
+    /// `Q2`
+    #[serde(rename = "Q2")]
+    Q2,
+    /// `Q3`
+    #[serde(rename = "Q3")]
+    Q3,
+    /// `Q4`
+    #[serde(rename = "Q4")]
+    Q4,
+}
+
+impl FlowOfFundsType {
+    /// The exact value sent to the API.
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Fy => "FY",
+            Self::Q => "Q",
+            Self::Q1 => "Q1",
+            Self::Q2 => "Q2",
+            Self::Q3 => "Q3",
+            Self::Q4 => "Q4",
+        }
+    }
+}
+
+impl std::fmt::Display for FlowOfFundsType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// Query parameters for `GET /analysis/flow-of-funds/{code}` (Stock Flow of Funds).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct FlowOfFundsParams {
+    /// Periode laporan: `FY` = tahunan, `Q` = seluruh kuartal, `Q1`–`Q4` = kuartal tertentu. (example `FY`)
+    pub r#type: FlowOfFundsType,
+    /// Jumlah periode terakhir yang ditampilkan. (default `8`, min `1`, max `8`, example `8`)
+    pub limit: Option<i64>,
+}
+
+impl FlowOfFundsParams {
+    /// Creates a value with the required fields set (optional fields start as `None`).
+    pub fn new(r#type: FlowOfFundsType) -> Self {
+        Self { r#type, ..Default::default() }
+    }
+}
+
+impl FlowOfFundsParams {
+    pub(crate) fn to_query(&self) -> Vec<(&'static str, String)> {
+        let mut q = vec![("type", self.r#type.to_string())];
+        if let Some(v) = &self.limit {
+            q.push(("limit", v.to_string()));
+        }
+        q
+    }
+}
+
 /// Allowed values for `type` of `GET /analysis/calendar`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 pub enum CalendarType {
@@ -4043,7 +4133,7 @@ pub struct UsageLogsParams {
     pub to: Option<String>,
     /// Filter log berdasarkan HTTP status code, mis. `200`, `422`, atau `429`. (min `100`, max `599`, example `200`)
     pub status: Option<i64>,
-    /// Jumlah log maksimal yang dikembalikan. Kosongkan untuk mengambil seluruh log. (min `1`, max `320000`, example `100`)
+    /// Jumlah log maksimal yang dikembalikan. Kosongkan untuk mengambil seluruh log. (min `1`, max `520000`, example `100`)
     pub limit: Option<i64>,
 }
 
@@ -4456,6 +4546,146 @@ impl NewsParams {
     }
 }
 
+/// Allowed values for `type` of `GET /analysis/disclosure`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+pub enum DisclosureType {
+    /// `shareholder`
+    #[default]
+    #[serde(rename = "shareholder")]
+    Shareholder,
+    /// `financial`
+    #[serde(rename = "financial")]
+    Financial,
+    /// `rups`
+    #[serde(rename = "rups")]
+    Rups,
+    /// `volatility_explanation`
+    #[serde(rename = "volatility_explanation")]
+    VolatilityExplanation,
+    /// `press_release`
+    #[serde(rename = "press_release")]
+    PressRelease,
+    /// `public_expose`
+    #[serde(rename = "public_expose")]
+    PublicExpose,
+    /// `right_issue`
+    #[serde(rename = "right_issue")]
+    RightIssue,
+    /// `dividen`
+    #[serde(rename = "dividen")]
+    Dividen,
+    /// `ad_publication`
+    #[serde(rename = "ad_publication")]
+    AdPublication,
+    /// `use_of_proceeds`
+    #[serde(rename = "use_of_proceeds")]
+    UseOfProceeds,
+    /// `exchange_clarification`
+    #[serde(rename = "exchange_clarification")]
+    ExchangeClarification,
+    /// `trading_suspension`
+    #[serde(rename = "trading_suspension")]
+    TradingSuspension,
+    /// `operational_report`
+    #[serde(rename = "operational_report")]
+    OperationalReport,
+    /// `annual_report`
+    #[serde(rename = "annual_report")]
+    AnnualReport,
+    /// `financial_info`
+    #[serde(rename = "financial_info")]
+    FinancialInfo,
+    /// `rating`
+    #[serde(rename = "rating")]
+    Rating,
+    /// `structured_warrant`
+    #[serde(rename = "structured_warrant")]
+    StructuredWarrant,
+    /// `bond`
+    #[serde(rename = "bond")]
+    Bond,
+    /// `management`
+    #[serde(rename = "management")]
+    Management,
+    /// `buyback`
+    #[serde(rename = "buyback")]
+    Buyback,
+    /// `ownership`
+    #[serde(rename = "ownership")]
+    Ownership,
+    /// `capital_action`
+    #[serde(rename = "capital_action")]
+    CapitalAction,
+    /// `public_offering`
+    #[serde(rename = "public_offering")]
+    PublicOffering,
+    /// `material_transaction`
+    #[serde(rename = "material_transaction")]
+    MaterialTransaction,
+    /// `agreement`
+    #[serde(rename = "agreement")]
+    Agreement,
+    /// `corporate_group`
+    #[serde(rename = "corporate_group")]
+    CorporateGroup,
+    /// `articles_identity`
+    #[serde(rename = "articles_identity")]
+    ArticlesIdentity,
+    /// `legal`
+    #[serde(rename = "legal")]
+    Legal,
+    /// `material_info`
+    #[serde(rename = "material_info")]
+    MaterialInfo,
+    /// `other`
+    #[serde(rename = "other")]
+    Other,
+}
+
+impl DisclosureType {
+    /// The exact value sent to the API.
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Shareholder => "shareholder",
+            Self::Financial => "financial",
+            Self::Rups => "rups",
+            Self::VolatilityExplanation => "volatility_explanation",
+            Self::PressRelease => "press_release",
+            Self::PublicExpose => "public_expose",
+            Self::RightIssue => "right_issue",
+            Self::Dividen => "dividen",
+            Self::AdPublication => "ad_publication",
+            Self::UseOfProceeds => "use_of_proceeds",
+            Self::ExchangeClarification => "exchange_clarification",
+            Self::TradingSuspension => "trading_suspension",
+            Self::OperationalReport => "operational_report",
+            Self::AnnualReport => "annual_report",
+            Self::FinancialInfo => "financial_info",
+            Self::Rating => "rating",
+            Self::StructuredWarrant => "structured_warrant",
+            Self::Bond => "bond",
+            Self::Management => "management",
+            Self::Buyback => "buyback",
+            Self::Ownership => "ownership",
+            Self::CapitalAction => "capital_action",
+            Self::PublicOffering => "public_offering",
+            Self::MaterialTransaction => "material_transaction",
+            Self::Agreement => "agreement",
+            Self::CorporateGroup => "corporate_group",
+            Self::ArticlesIdentity => "articles_identity",
+            Self::Legal => "legal",
+            Self::MaterialInfo => "material_info",
+            Self::Other => "other",
+        }
+    }
+}
+
+impl std::fmt::Display for DisclosureType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// Query parameters for `GET /analysis/disclosure` (Stock Disclosure Information).
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct DisclosureParams {
@@ -4465,6 +4695,8 @@ pub struct DisclosureParams {
     pub limit: Option<i64>,
     /// Filter kode saham, mis. `BBCA` (opsional). (example `BBCA`)
     pub code: Option<String>,
+    /// Filter tipe laporan (opsional, huruf besar/kecil bebas). (example `public_expose`)
+    pub r#type: Option<DisclosureType>,
 }
 
 impl DisclosureParams {
@@ -4478,6 +4710,9 @@ impl DisclosureParams {
         }
         if let Some(v) = &self.code {
             q.push(("code", v.to_string()));
+        }
+        if let Some(v) = &self.r#type {
+            q.push(("type", v.to_string()));
         }
         q
     }

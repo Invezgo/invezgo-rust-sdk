@@ -1,12 +1,12 @@
 [package]
 name = "invezgo-sdk"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.82"
 description = "Official fully-typed Rust SDK for the Invezgo API (Indonesia stock market data) with built-in LRU cache and API key rotation."
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/invezgo/invezgo-sdk"
+repository = "https://github.com/Invezgo/invezgo-rust-sdk"
 homepage = "https://invezgo.com"
 documentation = "https://docs.rs/invezgo-sdk"
 keywords = ["invezgo", "stock", "idx", "indonesia", "sdk"]

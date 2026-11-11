@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0
+
+Regenerated from the latest OpenAPI spec (Invezgo API 1.2, 109 endpoints).
+
+### Added
+- `analysis().get_flow_of_funds(code, &FlowOfFundsParams)`: Flow of Funds (revenue → profit flow per period, with nodes, links and bridge) for `/analysis/flow-of-funds/{code}`.
+- `analysis().get_free_float(code, &FreeFloatParams)`: free float composition over time for `/analysis/free-float/{code}`.
+- `type` filter on `analysis().get_disclosure` (30 disclosure categories).
+- `id` field on disclosure items; `foreign_*` breakdown fields on shareholder classification and classify-table responses.
+
+### Changed (breaking)
+- Response models gained new public fields, so code that builds them with struct literals must add the new fields.
+- Screener and alert `formula` now accepts up to 2048 characters.
+- Order book `time` accepts `HH:mm:ss` as well as `HH:mm`.
+- Usage logs `limit` maximum raised to 520000.
+
+### Fixed
+- Crate `repository` URL now points to https://github.com/Invezgo/invezgo-rust-sdk.
+
 ## 0.2.0
 
 Rewrite generated from the official Invezgo OpenAPI spec (`codegen/gen_rust.py`).
