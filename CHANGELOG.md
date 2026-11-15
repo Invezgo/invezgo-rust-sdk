@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
+
+Breaking: `InvezgoError` gains the `Webhook` and `WebSocket` variants; exhaustive `match` on it needs a new arm.
 
 ### Added
 - Optional cargo feature `webhook`: `webhook::verify_webhook`, `verify_webhook_signature` and `parse_webhook` (HMAC-SHA256 over `timestamp.rawBody`, constant-time compare, 300 s tolerance), `WebhookEvent` with `name()`/`data_as()`, and typed data models for `update.*`, `alert.*`, `test.ping` and `quota.*`.
