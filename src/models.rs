@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 /// Request body of `POST /screener/screen`.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct ScreenRequest {
-    /// Formula untuk screening saham
+    /// Formula untuk screening saham - Mengacu pada \[Variabel Formula\](https://docs.invezgo.com/features/formula-variables/)
     pub formula: String,
     /// Kategori indeks saham yang ingin disaring (opsional, bisa multi seperti \["SYARIAH", "IDXENERGY"\])
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -189,14 +189,17 @@ pub struct AlertRequest {
     /// `scope` field.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<Vec<String>>,
-    /// Formula alert (sama dengan batas formula screener)
+    /// Formula alert, maksimal 2048 karakter (sama dengan formula screener)
     pub formula: String,
+    /// Tujuan pengiriman alert. TELEGRAM (default), WEBHOOK (webhook akun, domain `alert`), atau MCP (MCP Events untuk agen AI). WEBHOOK dan MCP membutuhkan paket PRIME, MAX, atau ELITE.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub channel: Option<String>,
 }
 
 impl AlertRequest {
     /// Creates a value with the required fields set (optional fields start as `None`).
-    pub fn new(name: impl Into<String>, every: impl Into<String>, send: impl Into<String>, formula: impl Into<String>) -> Self {
-        Self { name: name.into(), every: every.into(), send: send.into(), formula: formula.into(), ..Default::default() }
+    pub fn new(name: impl Into<String>, every: String, send: String, formula: impl Into<String>) -> Self {
+        Self { name: name.into(), every, send, formula: formula.into(), ..Default::default() }
     }
 }
 
@@ -232,17 +235,20 @@ pub struct UpdateAlertRequest {
     pub every: String,
     /// `send` field.
     pub send: String,
-    /// Formula alert (sama dengan batas formula screener)
+    /// Formula alert, maksimal 2048 karakter (sama dengan formula screener)
     pub formula: String,
     /// `scope` field.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<Vec<String>>,
+    /// Tujuan pengiriman alert. TELEGRAM (default), WEBHOOK (webhook akun, domain `alert`), atau MCP (MCP Events untuk agen AI). WEBHOOK dan MCP membutuhkan paket PRIME, MAX, atau ELITE. Jika tidak dikirim, channel alert tidak berubah.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub channel: Option<String>,
 }
 
 impl UpdateAlertRequest {
     /// Creates a value with the required fields set (optional fields start as `None`).
-    pub fn new(name: impl Into<String>, every: impl Into<String>, send: impl Into<String>, formula: impl Into<String>) -> Self {
-        Self { name: name.into(), every: every.into(), send: send.into(), formula: formula.into(), ..Default::default() }
+    pub fn new(name: impl Into<String>, every: String, send: String, formula: impl Into<String>) -> Self {
+        Self { name: name.into(), every, send, formula: formula.into(), ..Default::default() }
     }
 }
 
@@ -1005,6 +1011,9 @@ pub struct OrderBookResponse {
     /// Stock code; carries the market suffix when market is not RG (e.g. BBCANG)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
+    /// Time of the data in WIB (UTC+7), not UTC. Live data shows when it was retrieved; stored data shows when it was recorded. Null when no data is available.
+    #[serde(default)]
+    pub date: Option<String>,
     /// Buy queue levels, ordered from level 1 (best bid)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub bid: Vec<HashMap<String, Option<f64>>>,
@@ -1048,6 +1057,9 @@ pub struct IntradayDataResponse {
     /// Stock code (without market suffix)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
+    /// Time of the data in WIB (UTC+7), not UTC. Live data shows when it was retrieved; stored data shows when it was recorded, or 16:15 (market close) for daily data. Null when no data is available.
+    #[serde(default)]
+    pub date: Option<String>,
     /// Opening price (Rupiah)
     #[serde(default)]
     pub open: Option<f64>,
@@ -1107,6 +1119,9 @@ pub struct IntradayIndexResponse {
     /// Index code
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
+    /// Time of the data in WIB (UTC+7), not UTC. Live data shows when it was retrieved; stored data shows 16:15 (market close) of that trading day. Null when no data is available.
+    #[serde(default)]
+    pub date: Option<String>,
     /// Index opening value; may be a numeric string outside trading hours
     #[serde(default, deserialize_with = "crate::de::opt_flex_f64")]
     pub open: Option<f64>,
@@ -3458,6 +3473,9 @@ pub struct BatchOrderBookItem {
     /// Stock code; may carry the market suffix when market is not RG (e.g. BBCANG); empty string when not available
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
+    /// Time of the data in WIB (UTC+7), not UTC. Live data shows when it was retrieved; stored data shows when it was recorded. Null when no data is available.
+    #[serde(default)]
+    pub date: Option<String>,
     /// Buy queue levels, ordered from level 1 (best bid)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub bid: Vec<HashMap<String, Option<f64>>>,
@@ -3472,6 +3490,9 @@ pub struct BatchIntradayDataItem {
     /// Stock code (carries the market suffix when market is not RG)
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
+    /// Time of the data in WIB (UTC+7), not UTC. Live data shows when it was retrieved; stored data shows 16:15 (market close) of that trading day. Null when no data is available.
+    #[serde(default)]
+    pub date: Option<String>,
     /// Opening price (Rupiah)
     #[serde(default)]
     pub open: Option<f64>,
@@ -3531,6 +3552,9 @@ pub struct BatchIntradayIndexItem {
     /// Index code
     #[serde(default, deserialize_with = "crate::de::null_default")]
     pub code: String,
+    /// Time of the data in WIB (UTC+7), not UTC. Live data shows when it was retrieved; stored data shows 16:15 (market close) of that trading day. Null when no data is available.
+    #[serde(default)]
+    pub date: Option<String>,
     /// Index opening value
     #[serde(default)]
     pub open: Option<f64>,

@@ -236,7 +236,7 @@ fn decode<R: DeserializeOwned + Default>(text: &str) -> Result<R, InvezgoError> 
     Ok(serde_json::from_str(t)?)
 }
 
-fn api_error(status: u16, text: &str) -> ApiError {
+pub(crate) fn api_error(status: u16, text: &str) -> ApiError {
     let body: serde_json::Value =
         serde_json::from_str(text).unwrap_or_else(|_| serde_json::Value::String(text.to_string()));
     let s = |k: &str| body.get(k).and_then(|v| v.as_str()).map(str::to_string);

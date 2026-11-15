@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Optional cargo feature `webhook`: `webhook::verify_webhook`, `verify_webhook_signature` and `parse_webhook` (HMAC-SHA256 over `timestamp.rawBody`, constant-time compare, 300 s tolerance), `WebhookEvent` with `name()`/`data_as()`, and typed data models for `update.*`, `alert.*`, `test.ping` and `quota.*`.
+- Optional cargo feature `websocket`: `client.realtime()` / `realtime::Realtime::builder(api_key)` real-time client for `wss://api.invezgo.com/ws` (running trade and order book) delivering `RealtimeEvent`s via `next().await` or `Stream`, with subscriptions queued until `connected`, auto-reconnect (1-30 s backoff) and subscription replay.
+- `InvezgoError::Webhook { reason, message }`, `InvezgoError::WebSocket { close_code, message }` and `WebhookErrorReason`.
+
 ## 0.3.0
 
 Regenerated from the latest OpenAPI spec (Invezgo API 1.2, 109 endpoints).

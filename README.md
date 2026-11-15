@@ -20,6 +20,8 @@ SDK resmi untuk [Invezgo API](https://invezgo.com), penyedia data pasar modal In
 - [Rotasi API Key](#rotasi-api-key)
 - [Penanganan Error](#penanganan-error)
 - [Pagination](#pagination)
+- [Webhook](#webhook)
+- [WebSocket (Real-time)](#websocket-real-time)
 - [Praktik yang Disarankan](#praktik-yang-disarankan)
 - [Pengembangan](#pengembangan)
 - [Dukungan](#dukungan)
@@ -300,7 +302,9 @@ Seluruh method mengembalikan `invezgo_sdk::Result<T>` dengan tipe error `Invezgo
 | `RateLimited(RateLimitError)` | Batas request atau kuota tercapai pada seluruh API key |
 | `Http` | Kegagalan jaringan, TLS, atau timeout (`is_timeout()`) |
 | `Json` | Response tidak sesuai dengan tipe yang diharapkan |
-| `Config` | Konfigurasi client tidak valid |
+| `Config` | Konfigurasi client atau argumen tidak valid |
+| `Webhook` | Verifikasi webhook gagal (`reason`: `Timestamp`, `Signature`, atau `Payload`) |
+| `WebSocket` | Koneksi WebSocket gagal atau ditutup server (`close_code`, misalnya `4400`) |
 
 | `ErrorKind` | Status HTTP | Penyebab |
 |---|---|---|
@@ -357,6 +361,74 @@ while let Some(current) = page {
 # Ok(()) }
 ```
 
+## Webhook
+
+Fitur opsional `webhook` menyediakan verifikasi signature HMAC-SHA256 dan parsing payload webhook Invezgo. Fungsi ini berdiri sendiri dan tidak membutuhkan client maupun API key, cukup `secret` webhook dari [halaman pengaturan API](https://invezgo.com/id/setting/api).
+
+```toml
+invezgo-sdk = { version = "0.3", features = ["webhook"] }
+```
+
+```rust,ignore
+use invezgo_sdk::webhook::{verify_webhook, VerifyOptions, WebhookUpdateData};
+
+// `body`: body mentah (bytes) sebelum di-parse; `headers`: `http::HeaderMap` dari request
+let event = verify_webhook(&body, &headers, &secret, VerifyOptions::default())?;
+
+match event.name().as_str() {
+    "update.summary" | "update.financial" => {
+        let data: WebhookUpdateData = event.data_as()?;
+        println!("{} {:?}", data.date, data.path);
+    }
+    _ => {} // abaikan event yang belum dikenali
+}
+```
+
+- Verifikasi menggunakan body mentah. Jangan mem-parse lalu menyerialisasi ulang JSON sebelum verifikasi.
+- Header `X-Invezgo-Timestamp` dan `X-Invezgo-Signature` dibaca tanpa membedakan huruf besar/kecil. Gunakan `verify_webhook_signature` bila nilai header diambil secara terpisah.
+- Timestamp yang selisihnya lebih dari 300 detik ditolak. Batas ini dapat diubah melalui `VerifyOptions::tolerance`.
+- Kegagalan menghasilkan `InvezgoError::Webhook` dengan `reason` `Timestamp`, `Signature`, atau `Payload`.
+- Model data tersedia untuk event yang terdokumentasi: `WebhookUpdateData`, `WebhookAlertTriggeredData`, `WebhookAlertDisabledData`, `WebhookTestPingData`, dan `WebhookQuotaData`. Fungsi `parse_webhook` mem-parse body tanpa verifikasi.
+- Gunakan `event.id` untuk deduplikasi, karena event yang sama dapat dikirim ulang.
+
+## WebSocket (Real-time)
+
+Fitur opsional `websocket` menyediakan client real-time untuk running trade dan order book melalui `wss://api.invezgo.com/ws`. Fitur ini membutuhkan paket Developer Elite dan runtime Tokio.
+
+```toml
+invezgo-sdk = { version = "0.3", features = ["websocket"] }
+```
+
+```rust,ignore
+use invezgo_sdk::realtime::RealtimeEvent;
+
+let mut rt = client.realtime().connect()?;
+rt.subscribe_trades(&["BBCA", "TLKM"], Some(500), None)?; // kosongkan kode untuk seluruh saham
+rt.subscribe_orderbook(&["BBCA"])?;
+
+while let Some(event) = rt.next().await {
+    match event? {
+        RealtimeEvent::Trades { data, .. } => {
+            for t in data {
+                println!("{} {} {} {}", t.code, t.price, t.lot, t.side);
+            }
+        }
+        RealtimeEvent::Orderbook { code, side, levels, .. } => println!("{code} {side} {levels:?}"),
+        RealtimeEvent::Reconnecting { attempt, delay, .. } => {
+            eprintln!("Menyambung ulang ({attempt}) dalam {delay:?}");
+        }
+        _ => {}
+    }
+}
+```
+
+- `client.realtime()` memakai API key utama dan menurunkan URL dari `base_url`. Client mandiri dapat dibuat dengan `Realtime::builder(api_key).url(url)`. API key dikirim melalui header `Authorization`, tidak melalui URL.
+- `Realtime` juga mengimplementasikan `futures_util::Stream`.
+- Langganan yang dibuat sebelum server mengirim `connected` akan diantrekan, lalu dikirim ulang secara otomatis setiap kali koneksi tersambung kembali.
+- Sambung ulang otomatis menggunakan jeda 1, 2, 4, 8, 16, hingga 30 detik dan dapat dinonaktifkan dengan `.reconnect(false)`. Setelah event `Reconnecting` atau `Lagged`, ambil data yang terlewat melalui endpoint running trade dan order book.
+- Koneksi tidak disambung ulang setelah handshake `401`/`403`, kode penutupan `4400`, atau pemanggilan `close()`. Error tersebut dikirim sekali sebagai `Err`, lalu stream berakhir.
+- Batas sisi client: maksimal 200 kode running trade dan 20 kode order book per koneksi. Kode saham diubah menjadi huruf besar.
+
 ## Praktik yang Disarankan
 
 - Gunakan satu instance client untuk seluruh aplikasi, lalu `clone()` ke task lain.
@@ -377,6 +449,7 @@ File `src/models.rs`, `src/params.rs`, `src/resources.rs`, dan `docs/API.md` dih
 python ../codegen/generate.py rust              # generate ulang kode dari OpenAPI
 cargo clippy --all-targets -- -D warnings      # linting
 cargo test                                     # unit test, integration test, dan doctest
+cargo test --all-features                      # termasuk webhook dan WebSocket
 ```
 
 ## Dukungan

@@ -9,6 +9,8 @@ use crate::transport::Transport;
 /// Default API base URL.
 pub const DEFAULT_BASE_URL: &str = "https://api.invezgo.com";
 
+pub(crate) const USER_AGENT: &str = concat!("invezgo-rust-sdk/", env!("CARGO_PKG_VERSION"));
+
 /// L1 in-memory LRU cache settings. Only GET endpoints are cached; the raw body is stored.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CacheConfig {
@@ -76,6 +78,19 @@ impl InvezgoClient {
 
     pub(crate) fn transport(&self) -> &Transport {
         &self.inner
+    }
+
+    /// Real-time WebSocket client using the primary API key and `base_url`
+    /// (`https` becomes `wss`, `http` becomes `ws`, plus `/ws`).
+    #[cfg(feature = "websocket")]
+    pub fn realtime(&self) -> crate::realtime::RealtimeBuilder {
+        let base = &self.inner.base_url;
+        let url = match base.split_once("://") {
+            Some(("https", rest)) => format!("wss://{rest}/ws"),
+            Some(("http", rest)) => format!("ws://{rest}/ws"),
+            _ => format!("{base}/ws"),
+        };
+        crate::realtime::Realtime::builder(self.inner.keys[0].clone()).url(url)
     }
 }
 
@@ -155,10 +170,7 @@ impl InvezgoClientBuilder {
                 keys.push(k);
             }
         }
-        let http = reqwest::Client::builder()
-            .timeout(self.timeout)
-            .user_agent(concat!("invezgo-rust-sdk/", env!("CARGO_PKG_VERSION")))
-            .build()?;
+        let http = reqwest::Client::builder().timeout(self.timeout).user_agent(USER_AGENT).build()?;
         let base_url = self.base_url.trim_end_matches('/').to_string();
         Ok(InvezgoClient { inner: Arc::new(Transport::new(http, base_url, keys, self.cache)) })
     }

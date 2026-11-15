@@ -7,6 +7,8 @@
 //! * Typed request bodies ([`models`]), query parameters ([`params`]) and responses ([`models`]).
 //! * Built-in L1 LRU response cache (on by default, bounded by entries and bytes).
 //! * Multiple API keys with automatic rotation on HTTP 429 (per-minute limit or monthly quota).
+//! * Optional cargo features: `webhook` (signature verification, `webhook` module) and `websocket`
+//!   (real-time running trade and order book, `realtime` module).
 //!
 //! ```no_run
 //! use invezgo_sdk::{params::TopChangeParams, InvezgoClient, InvezgoError};
@@ -34,9 +36,13 @@ pub mod models;
 pub mod params;
 pub mod resources;
 mod transport;
+#[cfg(feature = "webhook")]
+pub mod webhook;
+#[cfg(feature = "websocket")]
+pub mod realtime;
 
 pub use client::{CacheConfig, InvezgoClient, InvezgoClientBuilder, DEFAULT_BASE_URL};
-pub use error::{ApiError, ErrorKind, InvezgoError, RateLimitError, Result};
+pub use error::{ApiError, ErrorKind, InvezgoError, RateLimitError, Result, WebhookErrorReason};
 
 #[cfg(doctest)]
 #[doc = include_str!("../README.md")]

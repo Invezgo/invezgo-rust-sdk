@@ -1192,11 +1192,11 @@ Batch endpoints: fetch many stocks in one request (counted as 1 request).
 client.batch().get_order_book(code: &str, params: Option<&BatchOrderBookParams>).await -> Result<Vec<BatchOrderBookItem>, InvezgoError>
 ```
 
-Get order book data for multiple stocks at once in a single request (up to 10 codes on the MAX plan, 25 on the ELITE plan).
+Get order book data for multiple stocks at once in a single request (up to 20 codes on the MAX plan, 50 on the ELITE plan).
 
 | Parameter | In | Type | Required | Default | Description |
 |---|---|---|---|---|---|
-| `code` | path | &str | yes |  | Daftar kode saham yang dipisahkan `\|` atau koma, mis. `BBCA\|GOTO\|TLKM`. Maksimal 10 kode (paket MAX) atau 25 kode (paket ELITE) per request. |
+| `code` | path | &str | yes |  | Daftar kode saham yang dipisahkan `\|` atau koma, mis. `BBCA\|GOTO\|TLKM`. Maksimal 20 kode (paket MAX) atau 50 kode (paket ELITE) per request. |
 | `market` | query | BatchOrderBookMarket: `Rg` = `RG`, `Ng` = `NG`, `Tn` = `TN` | no | `RG` | Jenis pasar: `RG` = Pasar Reguler, `NG` = Pasar Negosiasi, `TN` = Pasar Tunai. Gunakan `RG` untuk analisis pergerakan harga pada umumnya. Default `RG` bila tidak diisi. |
 | `date` | query | String | no |  | Tanggal order book historis (`YYYY-MM-DD`), data tersedia mulai `2026-03-25`. Kirim bersama `time`; kosongkan keduanya untuk data realtime. |
 | `time` | query | String | no |  | Jam order book dalam WIB, format `HH:mm` dengan presisi menit. Kirim bersama `date`. |
@@ -1211,11 +1211,11 @@ Returns: `Vec<BatchOrderBookItem>`.
 client.batch().get_intraday_data(code: &str, params: Option<&BatchIntradayDataParams>).await -> Result<Vec<BatchIntradayDataItem>, InvezgoError>
 ```
 
-Get compact intraday price data for multiple stocks at once in a single request (up to 10 codes on the MAX plan, 25 on the ELITE plan).
+Get compact intraday price data for multiple stocks at once in a single request (up to 20 codes on the MAX plan, 50 on the ELITE plan).
 
 | Parameter | In | Type | Required | Default | Description |
 |---|---|---|---|---|---|
-| `code` | path | &str | yes |  | Daftar kode saham yang dipisahkan `\|` atau koma, mis. `BBCA\|GOTO\|TLKM`. Maksimal 10 kode (paket MAX) atau 25 kode (paket ELITE) per request. |
+| `code` | path | &str | yes |  | Daftar kode saham yang dipisahkan `\|` atau koma, mis. `BBCA\|GOTO\|TLKM`. Maksimal 20 kode (paket MAX) atau 50 kode (paket ELITE) per request. |
 | `market` | query | BatchIntradayDataMarket: `Rg` = `RG`, `Ng` = `NG`, `Tn` = `TN` | no | `RG` | Jenis pasar: `RG` = Pasar Reguler, `NG` = Pasar Negosiasi, `TN` = Pasar Tunai. Gunakan `RG` untuk analisis pergerakan harga pada umumnya. Default `RG` bila tidak diisi. |
 | `date` | query | String | no |  | Tanggal data historis (`YYYY-MM-DD`). Kosongkan untuk data realtime hari ini. |
 
@@ -1229,11 +1229,11 @@ Returns: `Vec<BatchIntradayDataItem>`.
 client.batch().get_intraday_index(code: &str).await -> Result<Vec<BatchIntradayIndexItem>, InvezgoError>
 ```
 
-Get compact intraday data for multiple indexes at once in a single request (up to 10 codes on the MAX plan, 25 on the ELITE plan).
+Get compact intraday data for multiple indexes at once in a single request (up to 20 codes on the MAX plan, 50 on the ELITE plan).
 
 | Parameter | In | Type | Required | Default | Description |
 |---|---|---|---|---|---|
-| `code` | path | &str | yes |  | Daftar kode indeks yang dipisahkan `\|` atau koma, mis. `COMPOSITE\|LQ45\|IDX30`. Maksimal 10 kode (paket MAX) atau 25 kode (paket ELITE) per request. Daftar indeks tersedia di `/analysis/list/index`. |
+| `code` | path | &str | yes |  | Daftar kode indeks yang dipisahkan `\|` atau koma, mis. `COMPOSITE\|LQ45\|IDX30`. Maksimal 20 kode (paket MAX) atau 50 kode (paket ELITE) per request. Daftar indeks tersedia di `/analysis/list/index`. |
 
 Returns: `Vec<BatchIntradayIndexItem>`.
 

@@ -20,9 +20,46 @@ pub enum InvezgoError {
     /// HTTP 429 and no other API key is available (per-minute limit or monthly quota).
     #[error(transparent)]
     RateLimited(Box<RateLimitError>),
-    /// Invalid client configuration (e.g. empty API key).
+    /// Invalid client configuration or argument (e.g. empty API key, too many WebSocket codes).
     #[error("configuration error: {0}")]
     Config(String),
+    /// A webhook delivery failed verification or could not be parsed (feature `webhook`).
+    #[error("webhook verification failed ({reason}): {message}")]
+    Webhook {
+        /// Which check failed.
+        reason: WebhookErrorReason,
+        /// Details.
+        message: String,
+    },
+    /// The WebSocket connection failed or was closed by the server (feature `websocket`).
+    #[error("WebSocket error: {message}")]
+    WebSocket {
+        /// Close code sent by the server, e.g. `4400` for an invalid client message.
+        close_code: Option<u16>,
+        /// Details.
+        message: String,
+    },
+}
+
+/// Which webhook check failed (see [`InvezgoError::Webhook`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WebhookErrorReason {
+    /// `X-Invezgo-Timestamp` is missing, not all digits, or outside the tolerance.
+    Timestamp,
+    /// `X-Invezgo-Signature` is missing or does not match.
+    Signature,
+    /// The body is not a valid webhook event JSON.
+    Payload,
+}
+
+impl std::fmt::Display for WebhookErrorReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::Timestamp => "timestamp",
+            Self::Signature => "signature",
+            Self::Payload => "payload",
+        })
+    }
 }
 
 impl InvezgoError {
