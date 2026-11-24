@@ -393,7 +393,7 @@ match event.name().as_str() {
 
 ## WebSocket (Real-time)
 
-Fitur opsional `websocket` menyediakan client real-time untuk running trade dan order book melalui `wss://api.invezgo.com/ws`. Fitur ini membutuhkan paket Developer Elite dan runtime Tokio.
+Fitur opsional `websocket` menyediakan client real-time untuk running trade, order book, quote saham, dan indeks melalui `wss://api.invezgo.com/ws`. Fitur ini membutuhkan paket Developer Elite dan runtime Tokio.
 
 ```toml
 invezgo-sdk = { version = "0.4", features = ["websocket"] }
@@ -405,6 +405,8 @@ use invezgo_sdk::realtime::RealtimeEvent;
 let mut rt = client.realtime().connect()?;
 rt.subscribe_trades(&["BBCA", "TLKM"], Some(500), None)?; // kosongkan kode untuk seluruh saham
 rt.subscribe_orderbook(&["BBCA"])?;
+rt.subscribe_stock(&["BBCA"])?;
+rt.subscribe_index(&["COMPOSITE", "LQ45"])?; // kosongkan kode untuk seluruh indeks
 
 while let Some(event) = rt.next().await {
     match event? {
@@ -414,6 +416,8 @@ while let Some(event) = rt.next().await {
             }
         }
         RealtimeEvent::Orderbook { code, side, levels, .. } => println!("{code} {side} {levels:?}"),
+        RealtimeEvent::Stock(q) => println!("{} {} {:?}", q.code, q.last, q.change_pct),
+        RealtimeEvent::Index(q) => println!("{} {} {:?}", q.code, q.last, q.change_pct),
         RealtimeEvent::Reconnecting { attempt, delay, .. } => {
             eprintln!("Menyambung ulang ({attempt}) dalam {delay:?}");
         }
@@ -427,7 +431,8 @@ while let Some(event) = rt.next().await {
 - Langganan yang dibuat sebelum server mengirim `connected` akan diantrekan, lalu dikirim ulang secara otomatis setiap kali koneksi tersambung kembali.
 - Sambung ulang otomatis menggunakan jeda 1, 2, 4, 8, 16, hingga 30 detik dan dapat dinonaktifkan dengan `.reconnect(false)`. Setelah event `Reconnecting` atau `Lagged`, ambil data yang terlewat melalui endpoint running trade dan order book.
 - Koneksi tidak disambung ulang setelah handshake `401`/`403`, kode penutupan `4400`, atau pemanggilan `close()`. Error tersebut dikirim sekali sebagai `Err`, lalu stream berakhir.
-- Batas sisi client: maksimal 200 kode running trade dan 20 kode order book per koneksi. Kode saham diubah menjadi huruf besar.
+- Batas sisi client per koneksi: maksimal 200 kode running trade, 20 kode order book, 50 kode quote saham, dan 100 kode indeks. Kode diubah menjadi huruf besar.
+- Field `StockQuote` dan `IndexQuote` yang belum tersedia dari bursa bernilai `None`. Kode indeks mengikuti penulisan bursa (misalnya `Investor33`); bandingkan dengan `eq_ignore_ascii_case`.
 
 ## Praktik yang Disarankan
 

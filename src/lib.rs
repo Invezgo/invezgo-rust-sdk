@@ -8,7 +8,7 @@
 //! * Built-in L1 LRU response cache (on by default, bounded by entries and bytes).
 //! * Multiple API keys with automatic rotation on HTTP 429 (per-minute limit or monthly quota).
 //! * Optional cargo features: `webhook` (signature verification, `webhook` module) and `websocket`
-//!   (real-time running trade and order book, `realtime` module).
+//!   (real-time running trade, order book, stock quote and index, `realtime` module).
 //!
 //! ```no_run
 //! use invezgo_sdk::{params::TopChangeParams, InvezgoClient, InvezgoError};

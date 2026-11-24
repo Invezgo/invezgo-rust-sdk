@@ -1,4 +1,4 @@
-//! Real-time WebSocket client for running trade and order book (feature `websocket`, Elite plan).
+//! Real-time WebSocket client for running trade, order book, stock quote and index (feature `websocket`, Elite plan).
 //!
 //! The connection runs in a background Tokio task: it authenticates with
 //! `Authorization: Bearer <api_key>`, sends subscriptions once the server says `connected`,
@@ -12,6 +12,8 @@
 //! let mut rt = client.realtime().connect()?;
 //! rt.subscribe_trades(&["BBCA", "TLKM"], Some(500), None)?;
 //! rt.subscribe_orderbook(&["BBCA"])?;
+//! rt.subscribe_stock(&["BBCA"])?;
+//! rt.subscribe_index(&["COMPOSITE", "LQ45"])?;
 //!
 //! while let Some(event) = rt.next().await {
 //!     match event? {
@@ -21,6 +23,8 @@
 //!             }
 //!         }
 //!         RealtimeEvent::Orderbook { code, side, levels, .. } => println!("{code} {side} {levels:?}"),
+//!         RealtimeEvent::Stock(q) => println!("{} {} {:?}", q.code, q.last, q.change_pct),
+//!         RealtimeEvent::Index(q) => println!("{} {} {:?}", q.code, q.last, q.change_pct),
 //!         RealtimeEvent::Reconnecting { .. } => { /* backfill via REST after the next `Connected` */ }
 //!         _ => {}
 //!     }
@@ -50,6 +54,8 @@ pub const DEFAULT_WS_URL: &str = "wss://api.invezgo.com/ws";
 
 const MAX_TRADE_CODES: usize = 200;
 const MAX_ORDERBOOK_CODES: usize = 20;
+const MAX_STOCK_CODES: usize = 50;
+const MAX_INDEX_CODES: usize = 100;
 
 /// Subscription channel.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -58,6 +64,10 @@ pub enum Channel {
     Trades,
     /// Order book.
     Orderbook,
+    /// Stock quote.
+    Stock,
+    /// Index quote.
+    Index,
 }
 
 impl Channel {
@@ -65,6 +75,8 @@ impl Channel {
         match self {
             Self::Trades => "trades",
             Self::Orderbook => "orderbook",
+            Self::Stock => "stock",
+            Self::Index => "index",
         }
     }
 }
@@ -91,6 +103,75 @@ pub struct Trade {
     pub side: String,
 }
 
+/// Full stock quote snapshot (`stock` channel). Fields not yet provided by the exchange are `None`.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[serde(default)]
+pub struct StockQuote {
+    /// Stock code.
+    pub code: String,
+    /// Last price.
+    pub last: f64,
+    /// Previous close.
+    pub prev: Option<f64>,
+    /// Open.
+    pub open: Option<f64>,
+    /// Day high.
+    pub high: Option<f64>,
+    /// Day low.
+    pub low: Option<f64>,
+    /// `last - prev`.
+    pub change: Option<f64>,
+    /// Change in percent.
+    pub change_pct: Option<f64>,
+    /// Volume today in shares (not lots).
+    pub volume: Option<i64>,
+    /// Value today in Rupiah.
+    pub value: Option<i64>,
+    /// Number of trades today.
+    pub freq: Option<i64>,
+    /// Volume-weighted average price today.
+    pub avg: Option<f64>,
+    /// Pre-opening Indicative Equilibrium Price.
+    pub iep: Option<f64>,
+    /// Pre-opening Indicative Equilibrium Volume, in shares.
+    pub iev: Option<i64>,
+    /// Data time `HHMMSS` (WIB).
+    pub time: String,
+    /// Exchange sequence number.
+    pub seq: Option<i64>,
+}
+
+/// Index snapshot (`index` channel). `code` keeps the exchange's casing (e.g. `Investor33`), so
+/// compare it case-insensitively.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[serde(default)]
+pub struct IndexQuote {
+    /// Index code, e.g. `COMPOSITE`.
+    pub code: String,
+    /// Last value.
+    pub last: f64,
+    /// Previous close.
+    pub prev: Option<f64>,
+    /// Open.
+    pub open: Option<f64>,
+    /// Day high.
+    pub high: Option<f64>,
+    /// Day low.
+    pub low: Option<f64>,
+    /// `last - prev`.
+    pub change: Option<f64>,
+    /// Change in percent (3 decimals).
+    pub change_pct: Option<f64>,
+    /// Volume today in shares.
+    pub volume: Option<i64>,
+    /// Value today in Rupiah.
+    pub value: Option<i64>,
+    /// Number of trades today.
+    pub freq: Option<i64>,
+    /// Data time `HHMMSS` (WIB).
+    pub time: String,
+}
+
 /// Something delivered by [`Realtime::next`]. Unknown server message types arrive as [`RealtimeEvent::Unknown`].
 #[derive(Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
@@ -100,10 +181,10 @@ pub enum RealtimeEvent {
     Connected,
     /// Current subscription of a channel, after every subscribe/unsubscribe.
     Subscribed {
-        /// `trades` or `orderbook`.
+        /// `trades`, `orderbook`, `stock` or `index`.
         #[serde(default)]
         channel: String,
-        /// Subscribed codes; `None` means all stocks (`"*"`).
+        /// Subscribed codes; `None` means all stocks or indices (`"*"`).
         #[serde(default, deserialize_with = "codes_or_all")]
         codes: Option<Vec<String>>,
         /// Minimum lot filter (`trades` only).
@@ -151,6 +232,10 @@ pub enum RealtimeEvent {
         #[serde(default)]
         seq: Option<i64>,
     },
+    /// Stock quote update (full snapshot).
+    Stock(StockQuote),
+    /// Index update (full snapshot).
+    Index(IndexQuote),
     /// The connection dropped; the client waits `delay` and reconnects. Backfill missed data via
     /// REST (running trade / order book) after the next [`RealtimeEvent::Connected`].
     #[serde(skip)]
@@ -182,6 +267,9 @@ struct Subs {
     min_lot: Option<u64>,
     min_value: Option<u64>,
     orderbook: BTreeSet<String>,
+    stock: BTreeSet<String>,
+    /// Same shape as `trades`.
+    index: Option<Option<BTreeSet<String>>>,
     /// Bumped on every change, so commands already covered by a replay are not sent twice.
     version: u64,
 }
@@ -196,6 +284,14 @@ impl Subs {
         }
         if !self.orderbook.is_empty() {
             out.push(json!({"op": "subscribe", "channel": "orderbook", "codes": self.orderbook}));
+        }
+        if !self.stock.is_empty() {
+            out.push(json!({"op": "subscribe", "channel": "stock", "codes": self.stock}));
+        }
+        match &self.index {
+            Some(None) => out.push(json!({"op": "subscribe", "channel": "index"})),
+            Some(Some(c)) if !c.is_empty() => out.push(json!({"op": "subscribe", "channel": "index", "codes": c})),
+            _ => {}
         }
         out
     }
@@ -326,6 +422,43 @@ impl Realtime {
         })
     }
 
+    /// Subscribe to the stock quote (OHLC, volume, value, freq, IEP/IEV) of `codes` (required, at most 50 per connection).
+    pub fn subscribe_stock(&self, codes: &[&str]) -> Result<(), InvezgoError> {
+        let codes = upper(codes);
+        self.update(|s| {
+            if codes.is_empty() {
+                return Err("stock codes must not be empty".into());
+            }
+            let next: BTreeSet<String> = s.stock.iter().cloned().chain(codes.iter().cloned()).collect();
+            if next.len() > MAX_STOCK_CODES {
+                return Err(format!("at most {MAX_STOCK_CODES} stock quote codes per connection"));
+            }
+            s.stock = next;
+            Ok(json!({"op": "subscribe", "channel": "stock", "codes": codes}))
+        })
+    }
+
+    /// Subscribe to index quotes of `codes` (e.g. `COMPOSITE`, `LQ45`; empty = every index, at most 100 codes).
+    pub fn subscribe_index(&self, codes: &[&str]) -> Result<(), InvezgoError> {
+        let codes = upper(codes);
+        self.update(|s| {
+            let next = match (&s.index, codes.is_empty()) {
+                (_, true) | (Some(None), _) => None,
+                (Some(Some(cur)), false) => Some(cur.iter().cloned().chain(codes.iter().cloned()).collect()),
+                (None, false) => Some(codes.iter().cloned().collect::<BTreeSet<_>>()),
+            };
+            if next.as_ref().is_some_and(|c: &BTreeSet<String>| c.len() > MAX_INDEX_CODES) {
+                return Err(format!("at most {MAX_INDEX_CODES} index codes per connection"));
+            }
+            s.index = Some(next);
+            let mut m = json!({"op": "subscribe", "channel": "index"});
+            if !codes.is_empty() {
+                m["codes"] = json!(codes);
+            }
+            Ok(m)
+        })
+    }
+
     /// Unsubscribe `codes` from a channel; empty `codes` ends the whole channel (and clears trade filters).
     pub fn unsubscribe(&self, channel: Channel, codes: &[&str]) -> Result<(), InvezgoError> {
         let codes = upper(codes);
@@ -333,6 +466,14 @@ impl Realtime {
             match (channel, codes.is_empty()) {
                 (Channel::Trades, true) => (s.trades, s.min_lot, s.min_value) = (None, None, None),
                 (Channel::Orderbook, true) => s.orderbook.clear(),
+                (Channel::Stock, true) => s.stock.clear(),
+                (Channel::Index, true) => s.index = None,
+                (Channel::Index, false) => {
+                    if let Some(Some(cur)) = &mut s.index {
+                        cur.retain(|c| !codes.contains(c));
+                    }
+                }
+                (Channel::Stock, false) => s.stock.retain(|c| !codes.contains(c)),
                 // shortcut: "all stocks minus some codes" is not tracked, so a replay re-subscribes all stocks.
                 (Channel::Trades, false) => {
                     if let Some(Some(cur)) = &mut s.trades {

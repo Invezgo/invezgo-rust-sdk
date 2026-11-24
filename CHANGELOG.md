@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+Breaking: `realtime::Channel` gains the `Stock` and `Index` variants; exhaustive `match` on it needs new arms.
+
+### Added
+- Realtime: `subscribe_stock(codes)` (stock quote: OHLC, volume, value, freq, IEP/IEV; max 50 codes) and `subscribe_index(codes)` (index quotes, all indices when `codes` is empty; max 100 codes), delivered as `RealtimeEvent::Stock(StockQuote)` and `RealtimeEvent::Index(IndexQuote)`. `unsubscribe()` accepts `Channel::Stock` / `Channel::Index`; both are replayed after reconnect.
+
 ## 0.4.0
 
 Breaking: `InvezgoError` gains the `Webhook` and `WebSocket` variants; exhaustive `match` on it needs a new arm.

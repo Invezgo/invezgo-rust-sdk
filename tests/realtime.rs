@@ -62,16 +62,23 @@ async fn queued_subscriptions_sent_after_connected_and_messages_decoded() {
     // queued before the server says `connected`
     rt.subscribe_trades(&["bbca", "tlkm"], Some(500), None).unwrap();
     rt.subscribe_orderbook(&["bbca"]).unwrap();
+    rt.subscribe_stock(&["bbca"]).unwrap();
+    rt.subscribe_index(&["composite", "LQ45"]).unwrap();
+    rt.unsubscribe(invezgo_sdk::realtime::Channel::Index, &["lq45"]).unwrap();
 
     let mut ws = accept(&l).await;
     tokio::time::sleep(Duration::from_millis(100)).await;
     send(&mut ws, json!({"type": "connected"})).await;
     assert_eq!(recv(&mut ws).await, json!({"op":"subscribe","channel":"trades","codes":["BBCA","TLKM"],"min_lot":500}));
     assert_eq!(recv(&mut ws).await, json!({"op":"subscribe","channel":"orderbook","codes":["BBCA"]}));
+    assert_eq!(recv(&mut ws).await, json!({"op":"subscribe","channel":"stock","codes":["BBCA"]}));
+    assert_eq!(recv(&mut ws).await, json!({"op":"subscribe","channel":"index","codes":["COMPOSITE"]}));
 
     send(&mut ws, json!({"type":"subscribed","channel":"trades","codes":"*","min_lot":0,"min_value":0})).await;
     send(&mut ws, json!({"type":"trades","ts":1793240653184_i64,"data":[{"id":"202610290000255958","time":"092413","code":"ISAT","price":1465.0,"lot":9,"value":1318500,"change":-105.0,"side":"buy"}]})).await;
     send(&mut ws, json!({"type":"orderbook","code":"BBCA","side":"bid","levels":[[9875,120]],"seq":null})).await;
+    send(&mut ws, json!({"type":"stock","code":"BBCA","last":5650.0,"prev":5550.0,"open":null,"change_pct":1.8,"volume":114428700,"iev":7927800,"time":"110436","seq":4408664})).await;
+    send(&mut ws, json!({"type":"index","code":"Investor33","last":5221.553,"change_pct":1.462,"volume":20865566335_i64,"time":"110512"})).await;
     send(&mut ws, json!({"type":"lagged","missed":120})).await;
     send(&mut ws, json!({"type":"brand_new","x":1})).await;
 
@@ -94,6 +101,19 @@ async fn queued_subscriptions_sent_after_connected_and_messages_decoded() {
     match next(&mut rt).await.unwrap() {
         RealtimeEvent::Orderbook { code, side, levels, seq } => {
             assert_eq!((code.as_str(), side.as_str(), levels, seq), ("BBCA", "bid", vec![json!([9875, 120])], None));
+        }
+        e => panic!("{e:?}"),
+    }
+    match next(&mut rt).await.unwrap() {
+        RealtimeEvent::Stock(q) => {
+            assert_eq!((q.code.as_str(), q.last, q.prev, q.open, q.volume, q.iev, q.seq), ("BBCA", 5650.0, Some(5550.0), None, Some(114428700), Some(7927800), Some(4408664)));
+            assert_eq!(q.time, "110436");
+        }
+        e => panic!("{e:?}"),
+    }
+    match next(&mut rt).await.unwrap() {
+        RealtimeEvent::Index(q) => {
+            assert_eq!((q.code.as_str(), q.last, q.change_pct, q.prev, q.volume), ("Investor33", 5221.553, Some(1.462), None, Some(20865566335)));
         }
         e => panic!("{e:?}"),
     }
@@ -190,5 +210,8 @@ async fn client_side_guards() {
     let many: Vec<&str> = many.iter().map(String::as_str).collect();
     assert!(matches!(rt.subscribe_trades(&many, None, None), Err(InvezgoError::Config(_))));
     assert!(!matches!(rt.subscribe_trades(&many[..200], None, None), Err(InvezgoError::Config(_))));
+    assert!(matches!(rt.subscribe_stock(&[]), Err(InvezgoError::Config(_))));
+    assert!(matches!(rt.subscribe_stock(&many[..51]), Err(InvezgoError::Config(_))));
+    assert!(matches!(rt.subscribe_index(&many[..101]), Err(InvezgoError::Config(_))));
     assert!(matches!(Realtime::builder(" ").connect(), Err(InvezgoError::Config(_))));
 }
