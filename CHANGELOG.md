@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
 
 Breaking: `realtime::Channel` gains the `Stock` and `Index` variants; exhaustive `match` on it needs new arms.
 

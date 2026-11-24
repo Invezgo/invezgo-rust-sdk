@@ -366,7 +366,7 @@ while let Some(current) = page {
 Fitur opsional `webhook` menyediakan verifikasi signature HMAC-SHA256 dan parsing payload webhook Invezgo. Fungsi ini berdiri sendiri dan tidak membutuhkan client maupun API key, cukup `secret` webhook dari [halaman pengaturan API](https://invezgo.com/id/setting/api).
 
 ```toml
-invezgo-sdk = { version = "0.4", features = ["webhook"] }
+invezgo-sdk = { version = "0.5", features = ["webhook"] }
 ```
 
 ```rust,ignore
@@ -396,7 +396,7 @@ match event.name().as_str() {
 Fitur opsional `websocket` menyediakan client real-time untuk running trade, order book, quote saham, dan indeks melalui `wss://api.invezgo.com/ws`. Fitur ini membutuhkan paket Developer Elite dan runtime Tokio.
 
 ```toml
-invezgo-sdk = { version = "0.4", features = ["websocket"] }
+invezgo-sdk = { version = "0.5", features = ["websocket"] }
 ```
 
 ```rust,ignore
