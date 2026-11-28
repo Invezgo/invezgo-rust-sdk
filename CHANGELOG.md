@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0
+
+### Added
+- `analysis().get_large_orders(..)` (`GET /analysis/large-orders/{code}`, realtime): the day's largest aggressor orders (up to 300) with side, lot, value, VWAP, trade count, broker and foreign flag.
+- `analysis().get_footprint(..)` (`GET /analysis/footprint/{code}`, realtime): volume per minute per price, split by aggressor side.
+- `analysis().get_candle_brokers(..)` (`GET /analysis/candle-brokers/{code}`): aggressive and passive brokers, net per broker and foreign lots for a time window of up to 1 hour.
+- Types: `LargeOrdersParams` / `LargeOrdersResponse`, `FootprintParams` / `FootprintResponse`, `CandleBrokersParams` / `CandleBrokersResponse`.
+
+### Changed
+- `analysis().get_stock_running_trade(..)`: `limit` now allows at most 500 rows per page (was 1000).
+- Batch order book: `time` accepts `HH:mm:ss` as well as `HH:mm`; the nearest snapshot on that date is returned.
+
 ## 0.5.0
 
 Breaking: `realtime::Channel` gains the `Stock` and `Index` variants; exhaustive `match` on it needs new arms.

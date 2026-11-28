@@ -660,7 +660,7 @@ pub struct StockRunningTradeParams {
     pub date: String,
     /// Nomor halaman, dimulai dari 1. (default `1`, min `1`, example `1`)
     pub page: Option<i64>,
-    /// Jumlah transaksi per halaman. (default `50`, min `1`, max `1000`, example `50`)
+    /// Jumlah transaksi per halaman. (default `50`, min `1`, max `500`, example `50`)
     pub limit: Option<i64>,
     /// Sisi transaksi: `BUY` = match di harga offer (inisiatif beli), `SELL` = match di harga bid (inisiatif jual), `ALL` = seluruh transaksi. Diabaikan saat jam bursa (tanggal hari ini, 08:45–16:15 WIB pada hari bursa); hanya berlaku pada pengambilan data sehari penuh. (default `ALL`, example `ALL`)
     pub r#type: Option<StockRunningTradeType>,
@@ -1105,6 +1105,70 @@ impl MultiTimeChartParams {
             q.push(("timeframe", v.to_string()));
         }
         q
+    }
+}
+
+/// Query parameters for `GET /analysis/large-orders/{code}` (Stock Large Orders).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct LargeOrdersParams {
+    /// Tanggal data (`YYYY-MM-DD`). Gunakan hari bursa; tanggal libur bursa dapat menghasilkan data kosong. (example `2024-12-30`)
+    pub date: String,
+}
+
+impl LargeOrdersParams {
+    /// Creates a value with the required fields set.
+    pub fn new(date: impl Into<String>) -> Self {
+        Self { date: date.into() }
+    }
+}
+
+impl LargeOrdersParams {
+    pub(crate) fn to_query(&self) -> Vec<(&'static str, String)> {
+        vec![("date", self.date.to_string())]
+    }
+}
+
+/// Query parameters for `GET /analysis/candle-brokers/{code}` (Stock Candle Brokers).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct CandleBrokersParams {
+    /// Tanggal data (`YYYY-MM-DD`). Gunakan hari bursa; tanggal libur bursa dapat menghasilkan data kosong. (example `2024-12-30`)
+    pub date: String,
+    /// Awal jendela waktu (`HH:MM` atau `HH:MM:SS`, WIB). Harus kelipatan menit penuh (detik `:00`). (example `09:00:00`)
+    pub timefrom: String,
+    /// Akhir jendela waktu inklusif (`HH:MM` atau `HH:MM:SS`, WIB). Harus berakhir di detik `:59`, tidak lebih awal dari `timefrom`, dan maksimal 1 jam dari `timefrom`. (example `09:04:59`)
+    pub timeto: String,
+}
+
+impl CandleBrokersParams {
+    /// Creates a value with the required fields set.
+    pub fn new(date: impl Into<String>, timefrom: impl Into<String>, timeto: impl Into<String>) -> Self {
+        Self { date: date.into(), timefrom: timefrom.into(), timeto: timeto.into() }
+    }
+}
+
+impl CandleBrokersParams {
+    pub(crate) fn to_query(&self) -> Vec<(&'static str, String)> {
+        vec![("date", self.date.to_string()), ("timefrom", self.timefrom.to_string()), ("timeto", self.timeto.to_string())]
+    }
+}
+
+/// Query parameters for `GET /analysis/footprint/{code}` (Stock Footprint).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct FootprintParams {
+    /// Tanggal data (`YYYY-MM-DD`). Gunakan hari bursa; tanggal libur bursa dapat menghasilkan data kosong. (example `2024-12-30`)
+    pub date: String,
+}
+
+impl FootprintParams {
+    /// Creates a value with the required fields set.
+    pub fn new(date: impl Into<String>) -> Self {
+        Self { date: date.into() }
+    }
+}
+
+impl FootprintParams {
+    pub(crate) fn to_query(&self) -> Vec<(&'static str, String)> {
+        vec![("date", self.date.to_string())]
     }
 }
 
@@ -3978,7 +4042,7 @@ pub struct BatchOrderBookParams {
     pub market: Option<BatchOrderBookMarket>,
     /// Tanggal order book historis (`YYYY-MM-DD`), data tersedia mulai `2026-03-25`. Kirim bersama `time`; kosongkan keduanya untuk data realtime. (example `2026-03-25`)
     pub date: Option<String>,
-    /// Jam order book dalam WIB, format `HH:mm` dengan presisi menit. Kirim bersama `date`. (example `09:30`)
+    /// Jam order book dalam WIB, format `HH:mm` atau `HH:mm:ss`; diambil snapshot terdekat pada tanggal tersebut. Kirim bersama `date`. (example `09:30`)
     pub time: Option<String>,
 }
 

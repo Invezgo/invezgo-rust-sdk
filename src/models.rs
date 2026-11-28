@@ -1235,6 +1235,196 @@ pub struct MultiTimeChartItem {
     pub volume: Option<f64>,
 }
 
+/// Large aggressive orders of one day (regular board)
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct LargeOrdersResponse {
+    /// Number of all aggressor orders that day, before truncation to 300
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub count: i64,
+    /// The 300 largest orders by value, in ascending time order
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub orders: Vec<LargeOrdersOrders>,
+}
+
+/// Part of the response of `GET /analysis/large-orders/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct LargeOrdersOrders {
+    /// First trade time of the order (HH:MM:SS, WIB)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub time: String,
+    /// Last trade time of the order (HH:MM:SS, WIB)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub time_last: String,
+    /// Aggressor side
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub side: String,
+    /// Total lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub lot: f64,
+    /// Total value (Rupiah)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub value: f64,
+    /// Volume-weighted average price (Rupiah, rounded)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub price: i64,
+    /// Number of trades in the order
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub trades: i64,
+    /// Aggressor broker code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub broker: String,
+    /// True if the aggressor is a foreign investor
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign: bool,
+}
+
+/// Brokers behind the trades of one minute-aligned time window
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CandleBrokersResponse {
+    /// Aggressive buy lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub aggr_buy_lot: f64,
+    /// Aggressive sell lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub aggr_sell_lot: f64,
+    /// Foreign buy lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_buy_lot: f64,
+    /// Foreign sell lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign_sell_lot: f64,
+    /// Top 10 aggressive buying brokers
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub aggr_buy: Vec<CandleBrokersAggrBuy>,
+    /// Top 10 aggressive selling brokers
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub aggr_sell: Vec<CandleBrokersAggrSell>,
+    /// Top 10 passive buying brokers
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub pass_buy: Vec<CandleBrokersPassBuy>,
+    /// Top 10 passive selling brokers
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub pass_sell: Vec<CandleBrokersPassSell>,
+    /// Top 10 brokers by absolute buy minus sell
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub net: Vec<CandleBrokersNet>,
+}
+
+/// Part of the response of `GET /analysis/candle-brokers/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CandleBrokersAggrBuy {
+    /// Broker code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub broker: String,
+    /// Lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub lot: f64,
+    /// True if the broker traded for a foreign investor
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign: bool,
+}
+
+/// Part of the response of `GET /analysis/candle-brokers/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CandleBrokersAggrSell {
+    /// Broker code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub broker: String,
+    /// Lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub lot: f64,
+    /// True if the broker traded for a foreign investor
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign: bool,
+}
+
+/// Part of the response of `GET /analysis/candle-brokers/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CandleBrokersPassBuy {
+    /// Broker code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub broker: String,
+    /// Lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub lot: f64,
+    /// True if the broker traded for a foreign investor
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign: bool,
+}
+
+/// Part of the response of `GET /analysis/candle-brokers/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CandleBrokersPassSell {
+    /// Broker code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub broker: String,
+    /// Lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub lot: f64,
+    /// True if the broker traded for a foreign investor
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign: bool,
+}
+
+/// Part of the response of `GET /analysis/candle-brokers/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CandleBrokersNet {
+    /// Broker code
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub broker: String,
+    /// Bought lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub buy: f64,
+    /// Sold lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub sell: f64,
+    /// Buy minus sell (lots)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub net: f64,
+    /// True if the broker traded for a foreign investor
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub foreign: bool,
+}
+
+/// Footprint of one day: traded lots and value per minute and price, by aggressor side (regular board)
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FootprintResponse {
+    /// Minutes that have trades, ascending
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub minutes: Vec<FootprintMinutes>,
+}
+
+/// Part of the response of `GET /analysis/footprint/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FootprintMinutes {
+    /// Minute of the trades (HH:MM, WIB)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub time: String,
+    /// Prices within the minute, ascending
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub rows: Vec<FootprintMinutesRows>,
+}
+
+/// Part of the response of `GET /analysis/footprint/{code}`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FootprintMinutesRows {
+    /// Price (Rupiah)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub price: i64,
+    /// Aggressor-buy lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub buy_lot: f64,
+    /// Aggressor-sell lots
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub sell_lot: f64,
+    /// Aggressor-buy value (Rupiah)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub buy_value: f64,
+    /// Aggressor-sell value (Rupiah)
+    #[serde(default, deserialize_with = "crate::de::null_default")]
+    pub sell_value: f64,
+}
+
 /// Part of the response of `GET /analysis/chart/stock/{indicator}/{code}`.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct IndicatorChartItem {
